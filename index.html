@@ -6,64 +6,93 @@
   <title>중2 영어 독해 학습</title>
   <style>
     body {
-      font-family: sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       margin: 0;
       padding: 20px;
-      background: #f8f9fa;
+      background: #f9f9f9;
+      color: #333;
     }
     .container {
       max-width: 800px;
       margin: 0 auto;
       background: white;
       padding: 24px;
-      border-radius: 8px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     }
     h1 {
       text-align: center;
-      color: #1a73e8;
+      color: #1e40af;
+      margin-bottom: 8px;
+    }
+    p.subtitle {
+      text-align: center;
+      color: #555;
+      margin-bottom: 24px;
     }
     textarea {
       width: 100%;
-      min-height: 180px;
-      padding: 12px;
-      font-size: 16px;
-      border: 1px solid #dadce0;
-      border-radius: 6px;
+      min-height: 160px;
+      padding: 16px;
+      font-size: 17px;
+      line-height: 1.5;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
       resize: vertical;
       box-sizing: border-box;
+      font-family: inherit;
     }
     button {
+      display: block;
       width: 100%;
       padding: 14px;
       font-size: 17px;
-      background: #1a73e8;
+      background: #1d4ed8;
       color: white;
       border: none;
-      border-radius: 6px;
-      margin: 16px 0 8px;
+      border-radius: 8px;
+      margin: 16px 0;
       cursor: pointer;
+      font-weight: 500;
     }
     button:hover {
-      background: #1557b0;
+      background: #1e40af;
     }
     #result {
-      margin-top: 20px;
-      line-height: 1.6;
+      margin-top: 24px;
     }
-    .sentence {
-      margin-bottom: 16px;
-      padding-bottom: 12px;
-      border-bottom: 1px solid #eee;
+    .sentence-pair {
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .english {
+      font-size: 17px;
+      line-height: 1.6;
+      margin-bottom: 6px;
+      position: relative;
+    }
+    .korean {
+      font-size: 15px;
+      color: #4b5563;
+      line-height: 1.5;
+    }
+    .speaker {
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      margin-left: 8px;
+      vertical-align: middle;
     }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>중2 영어 독해 학습</h1>
-    <p>영어 지문을 입력한 후 버튼을 눌러보세요.</p>
+    <p class="subtitle">영어 지문을 입력한 후 버튼을 눌러보세요.</p>
 
-    <textarea id="input" placeholder="여기에 영어 문장이나 지문을 붙여넣으세요..."></textarea>
+    <textarea id="input" placeholder="여기에 영어 지문을 붙여넣으세요..."></textarea>
     <button id="btn">번역 및 분석</button>
 
     <div id="result"></div>
@@ -81,12 +110,39 @@
         return;
       }
 
-      result.innerHTML = '<p style="color:#555; font-weight:bold;">입력한 내용:</p>' +
-                         '<p style="white-space: pre-wrap;">' + text + '</p>' +
-                         '<hr>' +
-                         '<p style="color:#1a73e8; font-weight:bold;">작동 확인</p>' +
-                         '<p>버튼이 정상적으로 눌렸습니다!</p>' +
-                         '<p>이제 여기에 번역이나 단어 분석 기능을 붙일 수 있습니다.</p>';
+      // 문장 나누기 (간단한 정규식으로 . ! ? 기준 분리)
+      const sentences = text.split(/(?<=[.!?])\s+/).filter(s => s.trim());
+
+      result.innerHTML = '';
+
+      sentences.forEach(sentence => {
+        const div = document.createElement('div');
+        div.className = 'sentence-pair';
+
+        const eng = document.createElement('div');
+        eng.className = 'english';
+        eng.innerHTML = sentence;
+
+        const speakerBtn = document.createElement('button');
+        speakerBtn.className = 'speaker';
+        speakerBtn.textContent = '🔊';
+        speakerBtn.onclick = () => {
+          const utterance = new SpeechSynthesisUtterance(sentence);
+          utterance.lang = 'en-US';
+          utterance.rate = 0.9;
+          speechSynthesis.speak(utterance);
+        };
+
+        eng.appendChild(speakerBtn);
+
+        const kor = document.createElement('div');
+        kor.className = 'korean';
+        kor.textContent = '(아직 번역 기능이 없습니다)';
+
+        div.appendChild(eng);
+        div.appendChild(kor);
+        result.appendChild(div);
+      });
     });
   </script>
 </body>
