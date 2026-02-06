@@ -41,16 +41,16 @@
     .test-kor { font-weight: 600; color: #1e40af; margin-bottom: 10px; font-size: 15px; }
     .test-input { width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; font-size: 16px; box-sizing: border-box; outline: none; transition: 0.3s; }
     
-    /* 입력창 상태별 색상 */
     .test-input.input-correct { border-color: #10b981; background-color: #f0fdf4; }
     .test-input.input-incorrect { border-color: #ef4444; background-color: #fef2f2; }
 
     .check-btn { background: #6366f1; color: white; border: none; padding: 8px 16px; border-radius: 6px; margin-top: 10px; cursor: pointer; font-weight: 600; transition: 0.2s; }
     .check-btn:hover { background: #4f46e5; }
     
-    .feedback { margin-top: 10px; font-size: 14px; font-weight: bold; display: block; min-height: 20px; }
+    .feedback { margin-top: 10px; font-size: 14px; font-weight: bold; display: block; line-height: 1.5; }
     .correct { color: #059669; }
     .incorrect { color: #dc2626; }
+    .ans-display { font-size: 13px; color: #666; font-weight: normal; margin-top: 5px; background: #f1f5f9; padding: 5px 10px; border-radius: 4px; display: inline-block; }
   </style>
 </head>
 <body>
@@ -126,7 +126,6 @@
           const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(eng)}&langpair=en|ko`);
           const data = await res.json();
           const kor = data.responseData.translatedText;
-          
           studyData.push({ eng, kor });
           renderSentence(eng, kor);
         } catch (e) {
@@ -198,17 +197,18 @@
           const userVal = inputField.value.trim();
           const ansVal = inputField.dataset.ans.trim();
           
-          // 구두점 무시하고 비교
           const cleanUser = userVal.toLowerCase().replace(/[.?!,]/g, "");
           const cleanAns = ansVal.toLowerCase().replace(/[.?!,]/g, "");
 
           if (cleanUser === cleanAns) {
-            feedback.innerHTML = "✅ 정답이야 서현아! 최고!";
-            feedback.className = "feedback correct";
+            feedback.innerHTML = `<span class="correct">✅ 정답이야 서현아! 최고!</span>`;
             inputField.className = "test-input input-correct";
           } else {
-            feedback.innerHTML = `❌ 다시 한번 생각해봐! (힌트: 첫 글자는 '${ansVal[0]}')`;
-            feedback.className = "feedback incorrect";
+            // 틀렸을 경우, 정답 문장을 함께 보여주어 비교하게 함
+            feedback.innerHTML = `
+              <span class="incorrect">❌ 조금 달라요! 다시 확인해볼까?</span><br>
+              <div class="ans-display">💡 정답: ${ansVal}</div>
+            `;
             inputField.className = "test-input input-incorrect";
           }
         };
