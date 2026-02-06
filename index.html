@@ -31,26 +31,21 @@
     
     .popup { position: absolute; background: #fff; border: 1px solid #d1d5db; border-radius: 12px; padding: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); z-index: 1000; min-width: 200px; animation: fadeIn 0.2s ease-out; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-    .popup-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
-    .popup-word { font-size: 18px; font-weight: bold; color: #1e40af; }
-    .popup-meaning { font-size: 16px; color: #111827; font-weight: 600; margin: 8px 0; }
-    .naver-link { display: block; margin-top: 10px; font-size: 12px; color: #10b981; text-decoration: none; text-align: right; }
-
+    
     #test-area { display: none; margin-top: 30px; padding: 20px; border-radius: 12px; background: #eff6ff; border: 2px solid #3b82f6; }
     .test-item { background: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
     .test-kor { font-weight: 600; color: #1e40af; margin-bottom: 10px; font-size: 15px; }
-    .test-input { width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; font-size: 16px; box-sizing: border-box; outline: none; transition: 0.3s; }
+    .test-input { width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; font-size: 16px; box-sizing: border-box; outline: none; }
     
-    .test-input.input-correct { border-color: #10b981; background-color: #f0fdf4; }
-    .test-input.input-incorrect { border-color: #ef4444; background-color: #fef2f2; }
-
     .check-btn { background: #6366f1; color: white; border: none; padding: 8px 16px; border-radius: 6px; margin-top: 10px; cursor: pointer; font-weight: 600; transition: 0.2s; }
-    .check-btn:hover { background: #4f46e5; }
     
-    .feedback { margin-top: 10px; font-size: 14px; font-weight: bold; display: block; line-height: 1.5; }
-    .correct { color: #059669; }
-    .incorrect { color: #dc2626; }
-    .ans-display { font-size: 13px; color: #666; font-weight: normal; margin-top: 5px; background: #f1f5f9; padding: 5px 10px; border-radius: 4px; display: inline-block; }
+    .feedback { margin-top: 10px; font-size: 14px; font-weight: bold; line-height: 1.6; }
+    .diff-box { margin-top: 8px; padding: 10px; background: #f8fafc; border-radius: 6px; border: 1px solid #e2e8f0; font-family: monospace; font-size: 15px; }
+    
+    /* 단어별 색상 클래스 */
+    .word-correct { color: #059669; font-weight: bold; }
+    .word-wrong { color: #ef4444; font-weight: bold; text-decoration: underline; }
+    .word-normal { color: #64748b; }
   </style>
 </head>
 <body>
@@ -64,12 +59,10 @@
     </div>
 
     <div id="result"></div>
-    
     <button id="test-start-btn" class="primary-btn test-btn">📝 영작 테스트 시작하기</button>
 
     <div id="test-area">
       <h3 style="margin-top:0; text-align:center;">✍️ 서현이의 영작 도전!</h3>
-      <p style="font-size:13px; color:#666; text-align:center;">한글을 보고 영어로 써본 뒤 정답 확인을 눌러봐!</p>
       <div id="test-list"></div>
       <button id="go-back-btn" style="background:none; border:none; color:#666; text-decoration:underline; cursor:pointer; width:100%; margin-top:10px;">다시 공부하러 가기</button>
     </div>
@@ -86,12 +79,6 @@
     const goBackBtn = document.getElementById('go-back-btn');
 
     let studyData = [];
-
-    const simpleDict = {
-      dog: { pos: "명사", meaning: "개", explain: "사람과 가장 친한 반려동물" },
-      special: { pos: "형용사", meaning: "특별한", explain: "보통과 다르거나 매우 소중한" },
-      family: { pos: "명사", meaning: "가족", explain: "함께 생활하며 사랑하는 사람들" }
-    };
 
     function speak(text) {
       window.speechSynthesis.cancel();
@@ -112,15 +99,11 @@
     btn.addEventListener('click', async () => {
       const text = input.value.trim();
       if (!text) return alert('지문을 입력하세요.');
-
       btn.disabled = true;
       btn.textContent = '지문 분석 중...';
       resultDiv.innerHTML = '';
       studyData = [];
-      testArea.style.display = 'none';
-
       const sentences = text.split(/(?<=[.!?])\s+/).filter(s => s.trim());
-
       for (let eng of sentences) {
         try {
           const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(eng)}&langpair=en|ko`);
@@ -128,9 +111,7 @@
           const kor = data.responseData.translatedText;
           studyData.push({ eng, kor });
           renderSentence(eng, kor);
-        } catch (e) {
-          renderSentence(eng, "번역 서버 오류");
-        }
+        } catch (e) { renderSentence(eng, "번역 서버 오류"); }
       }
       btn.disabled = false;
       btn.textContent = '번역 및 분석 시작';
@@ -142,22 +123,14 @@
       pair.className = 'sentence-pair';
       const engDiv = document.createElement('div');
       engDiv.className = 'english';
-      const words = eng.split(/([^a-zA-Z]+)/);
-      words.forEach(part => {
+      eng.split(/([^a-zA-Z]+)/).forEach(part => {
+        const span = document.createElement('span');
         if (/^[a-zA-Z]+$/.test(part)) {
-          const span = document.createElement('span');
           span.className = 'word';
           span.textContent = part;
-          span.onclick = (e) => {
-            e.stopPropagation();
-            const cleanWord = part.toLowerCase();
-            if (simpleDict[cleanWord]) showWordPopup(e, cleanWord);
-            else openNaverDict(part);
-          };
-          engDiv.appendChild(span);
-        } else {
-          engDiv.appendChild(document.createTextNode(part));
-        }
+          span.onclick = () => openNaverDict(part);
+        } else { span.textContent = part; }
+        engDiv.appendChild(span);
       });
       const speakBtn = document.createElement('button');
       speakBtn.className = 'speaker-btn';
@@ -167,8 +140,7 @@
       const korDiv = document.createElement('div');
       korDiv.className = 'korean';
       korDiv.textContent = kor;
-      pair.appendChild(engDiv);
-      pair.appendChild(korDiv);
+      pair.appendChild(engDiv); pair.appendChild(korDiv);
       resultDiv.appendChild(pair);
     }
 
@@ -197,25 +169,46 @@
           const userVal = inputField.value.trim();
           const ansVal = inputField.dataset.ans.trim();
           
-          const cleanUser = userVal.toLowerCase().replace(/[.?!,]/g, "");
-          const cleanAns = ansVal.toLowerCase().replace(/[.?!,]/g, "");
+          const userWords = userVal.split(/\s+/);
+          const ansWords = ansVal.split(/\s+/);
+          
+          let resultHTML = "";
+          let isAllCorrect = true;
 
-          if (cleanUser === cleanAns) {
-            feedback.innerHTML = `<span class="correct">✅ 정답이야 서현아! 최고!</span>`;
-            inputField.className = "test-input input-correct";
+          // 단어별로 비교 (정답 단어 기준으로 비교)
+          ansWords.forEach((aWord, i) => {
+            const uWord = userWords[i] || "";
+            const cleanA = aWord.toLowerCase().replace(/[.?!,]/g, "");
+            const cleanU = uWord.toLowerCase().replace(/[.?!,]/g, "");
+
+            if (cleanA === cleanU) {
+              resultHTML += `<span class="word-correct">${uWord || aWord}</span> `;
+            } else {
+              isAllCorrect = false;
+              resultHTML += `<span class="word-wrong">${uWord || "___"}</span> `;
+            }
+          });
+
+          if (isAllCorrect && userWords.length === ansWords.length) {
+            feedback.innerHTML = `<div style="color:#059669">✅ 완벽해 서현아! 정말 잘했어!</div>`;
+            inputField.style.borderColor = "#10b981";
           } else {
-            // 틀렸을 경우, 정답 문장을 함께 보여주어 비교하게 함
             feedback.innerHTML = `
-              <span class="incorrect">❌ 조금 달라요! 다시 확인해볼까?</span><br>
-              <div class="ans-display">💡 정답: ${ansVal}</div>
+              <div style="color:#ef4444">❌ 단어를 더 열심히 공부해 볼까?</div>
+              <div class="diff-box">
+                <div style="font-size:12px; color:#666; margin-bottom:4px;">내 답안 분석:</div>
+                ${resultHTML}
+                <div style="margin-top:8px; border-top:1px dashed #ccc; padding-top:4px; font-size:13px; color:#1e40af;">
+                  정답: ${ansVal}
+                </div>
+              </div>
             `;
-            inputField.className = "test-input input-incorrect";
+            inputField.style.borderColor = "#ef4444";
           }
         };
 
         checkBtn.onclick = verifyAnswer;
         inputField.onkeypress = (e) => { if (e.key === 'Enter') verifyAnswer(); };
-
         testList.appendChild(div);
       });
       window.scrollTo({ top: testArea.offsetTop, behavior: 'smooth' });
@@ -227,28 +220,6 @@
       const top = (window.innerHeight / 2) - (h / 2);
       speak(word);
       window.open(`https://en.dict.naver.com/#/search?query=${word}`, 'naverDict', `width=${w},height=${h},top=${top},left=${left},scrollbars=yes`);
-    }
-
-    function showWordPopup(e, wordKey) {
-      document.querySelectorAll('.popup').forEach(p => p.remove());
-      const info = simpleDict[wordKey];
-      const popup = document.createElement('div');
-      popup.className = 'popup';
-      popup.innerHTML = `
-        <div class="popup-header">
-          <span class="popup-word">${wordKey.toUpperCase()}</span>
-          <button class="speaker-btn" id="pop-speak">🔊</button>
-        </div>
-        <div class="popup-meaning">${info.meaning}</div>
-        <div class="popup-explain">${info.explain}</div>
-        <a href="https://en.dict.naver.com/#/search?query=${wordKey}" target="_blank" class="naver-link">더 자세히 보기 →</a>
-      `;
-      document.body.appendChild(popup);
-      popup.style.left = Math.min(window.innerWidth - 220, e.pageX) + 'px';
-      popup.style.top = (e.pageY + 15) + 'px';
-      popup.querySelector('#pop-speak').onclick = (ev) => { ev.stopPropagation(); speak(wordKey); };
-      const close = (ev) => { if(!popup.contains(ev.target)) { popup.remove(); document.removeEventListener('click', close); } };
-      setTimeout(() => document.addEventListener('click', close), 10);
     }
   </script>
 </body>
