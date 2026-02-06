@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>우리딸 영어 독해 학습 - 테스트 모드 포함</title>
+  <title>우리딸 영어 독해 학습 - 완벽 복습 모드</title>
   <link rel="icon" href="data:;base64,iVBORw0KGgo=">
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 20px; background: #f4f7f6; color: #333; }
@@ -16,55 +16,67 @@
     .primary-btn { width: 100%; padding: 14px; font-size: 17px; background: #2563eb; color: white; border: none; border-radius: 8px; margin: 16px 0; cursor: pointer; font-weight: 600; transition: 0.2s; }
     .primary-btn:hover { background: #1d4ed8; }
     .test-btn { background: #10b981; display: none; margin-top: 10px; }
-    .test-btn:hover { background: #059669; }
     
     #result { margin-top: 24px; }
-    .sentence-pair { margin-bottom: 24px; padding: 16px; background: #f8fafc; border-radius: 8px; border-left: 4px solid #3b82f6; position: relative; }
+    .sentence-pair { margin-bottom: 24px; padding: 16px; background: #f8fafc; border-radius: 8px; border-left: 4px solid #3b82f6; }
     .english { font-size: 18px; line-height: 1.8; margin-bottom: 8px; font-weight: 500; color: #1f2937; }
-    .korean { font-size: 15px; color: #6b7280; line-height: 1.5; }
+    .korean { font-size: 15px; color: #6b7280; }
     
-    .speaker-btn { background: none; border: none; font-size: 18px; cursor: pointer; opacity: 0.4; transition: 0.2s; vertical-align: middle; }
-    .speaker-btn:hover { opacity: 1; transform: scale(1.1); }
+    .speaker-btn { background: none; border: none; font-size: 18px; cursor: pointer; opacity: 0.4; vertical-align: middle; }
+    .speaker-btn:hover { opacity: 1; }
     
-    .word { cursor: pointer; border-bottom: 1px dashed #cbd5e1; padding: 0 1px; transition: all 0.2s; }
-    .word:hover { background: #dbeafe; color: #2563eb; border-bottom-color: #2563eb; }
+    .word { cursor: pointer; border-bottom: 1px dashed #cbd5e1; }
+    .word:hover { background: #dbeafe; color: #2563eb; }
     
-    .popup { position: absolute; background: #fff; border: 1px solid #d1d5db; border-radius: 12px; padding: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); z-index: 1000; min-width: 200px; animation: fadeIn 0.2s ease-out; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    /* 테스트 공통 스타일 */
+    .test-section { display: none; margin-top: 30px; padding: 20px; border-radius: 12px; border: 2px solid #3b82f6; }
+    #test-area { background: #eff6ff; } /* 영작 모드 배경 */
+    #translation-test-area { background: #f0fdf4; border-color: #10b981; } /* 한글쓰기 모드 배경 */
     
-    #test-area { display: none; margin-top: 30px; padding: 20px; border-radius: 12px; background: #eff6ff; border: 2px solid #3b82f6; }
     .test-item { background: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-    .test-kor { font-weight: 600; color: #1e40af; margin-bottom: 10px; font-size: 15px; }
-    .test-input { width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; font-size: 16px; box-sizing: border-box; outline: none; }
+    .test-label { font-weight: 600; color: #1e40af; margin-bottom: 10px; font-size: 15px; }
+    .test-input { width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; font-size: 16px; box-sizing: border-box; outline: none; transition: 0.3s; }
     
-    .check-btn { background: #6366f1; color: white; border: none; padding: 8px 16px; border-radius: 6px; margin-top: 10px; cursor: pointer; font-weight: 600; transition: 0.2s; }
-    
+    .check-btn { background: #6366f1; color: white; border: none; padding: 8px 16px; border-radius: 6px; margin-top: 10px; cursor: pointer; font-weight: 600; }
     .feedback { margin-top: 10px; font-size: 14px; font-weight: bold; line-height: 1.6; }
-    .diff-box { margin-top: 8px; padding: 10px; background: #f8fafc; border-radius: 6px; border: 1px solid #e2e8f0; font-family: monospace; font-size: 15px; }
+    .diff-box { margin-top: 8px; padding: 10px; background: #f8fafc; border-radius: 6px; border: 1px solid #e2e8f0; font-size: 15px; }
     
-    /* 단어별 색상 클래스 */
     .word-correct { color: #059669; font-weight: bold; }
     .word-wrong { color: #ef4444; font-weight: bold; text-decoration: underline; }
-    .word-normal { color: #64748b; }
+    
+    .nav-buttons { display: flex; justify-content: center; gap: 20px; margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px; }
+    .nav-link { color: #666; text-decoration: underline; cursor: pointer; font-size: 14px; }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>우리딸 영어 독해 학습</h1>
-    <p class="subtitle">서현아 모르는 단어를 클릭해봐★크롬에서 가장 잘 들려요!!</p>
+    <p class="subtitle">서현아 모르는 단어를 클릭해봐★</p>
 
     <div id="study-input-area">
-      <textarea id="input" placeholder="사랑해 서현아 여기다 영어를 입력해봐..."></textarea>
+      <textarea id="input" placeholder="♥서현아 공부하는 네가 자랑스러워. 여기다 영어를 입력해봐..."></textarea>
       <button id="btn" class="primary-btn">번역 및 분석 시작</button>
     </div>
 
     <div id="result"></div>
     <button id="test-start-btn" class="primary-btn test-btn">📝 영작 테스트 시작하기</button>
 
-    <div id="test-area">
-      <h3 style="margin-top:0; text-align:center;">✍️ 서현이의 영작 도전!</h3>
+    <div id="test-area" class="test-section">
+      <h3 style="text-align:center;">✍️ 서현이의 영작 도전!</h3>
       <div id="test-list"></div>
-      <button id="go-back-btn" style="background:none; border:none; color:#666; text-decoration:underline; cursor:pointer; width:100%; margin-top:10px;">다시 공부하러 가기</button>
+      <div class="nav-buttons">
+        <span class="nav-link" onclick="showMode('study')">다시 공부하러 가기</span>
+        <span class="nav-link" onclick="showMode('translate')">한글 뜻 쓰기 연습</span>
+      </div>
+    </div>
+
+    <div id="translation-test-area" class="test-section">
+      <h3 style="text-align:center;">🇰🇷 한글 뜻을 맞춰봐!</h3>
+      <div id="translation-test-list"></div>
+      <div class="nav-buttons">
+        <span class="nav-link" onclick="showMode('study')">다시 공부하러 가기</span>
+        <span class="nav-link" onclick="showMode('writing')">영작 테스트 연습</span>
+      </div>
     </div>
   </div>
 
@@ -73,29 +85,47 @@
     const btn = document.getElementById('btn');
     const resultDiv = document.getElementById('result');
     const testStartBtn = document.getElementById('test-start-btn');
+    const studyInputArea = document.getElementById('study-input-area');
+    
     const testArea = document.getElementById('test-area');
     const testList = document.getElementById('test-list');
-    const studyInputArea = document.getElementById('study-input-area');
-    const goBackBtn = document.getElementById('go-back-btn');
+    
+    const transTestArea = document.getElementById('translation-test-area');
+    const transTestList = document.getElementById('translation-test-list');
 
     let studyData = [];
+
+    // 화면 전환 함수
+    function showMode(mode) {
+      // 모든 영역 숨기기
+      studyInputArea.style.display = 'none';
+      resultDiv.style.display = 'none';
+      testStartBtn.style.display = 'none';
+      testArea.style.display = 'none';
+      transTestArea.style.display = 'none';
+
+      if (mode === 'study') {
+        studyInputArea.style.display = 'block';
+        resultDiv.style.display = 'block';
+        testStartBtn.style.display = 'block';
+      } else if (mode === 'writing') {
+        renderWritingTest();
+        testArea.style.display = 'block';
+      } else if (mode === 'translate') {
+        renderTranslationTest();
+        transTestArea.style.display = 'block';
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
 
     function speak(text) {
       window.speechSynthesis.cancel();
       const ut = new SpeechSynthesisUtterance(text);
       ut.lang = 'en-US';
-      ut.rate = 0.9;
       window.speechSynthesis.speak(ut);
     }
 
-    goBackBtn.onclick = () => {
-      testArea.style.display = 'none';
-      studyInputArea.style.display = 'block';
-      resultDiv.style.display = 'block';
-      testStartBtn.style.display = 'block';
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
-
+    // 분석 시작
     btn.addEventListener('click', async () => {
       const text = input.value.trim();
       if (!text) return alert('지문을 입력하세요.');
@@ -110,15 +140,15 @@
           const data = await res.json();
           const kor = data.responseData.translatedText;
           studyData.push({ eng, kor });
-          renderSentence(eng, kor);
-        } catch (e) { renderSentence(eng, "번역 서버 오류"); }
+          renderStudyItem(eng, kor);
+        } catch (e) { console.error(e); }
       }
       btn.disabled = false;
       btn.textContent = '번역 및 분석 시작';
       testStartBtn.style.display = 'block';
     });
 
-    function renderSentence(eng, kor) {
+    function renderStudyItem(eng, kor) {
       const pair = document.createElement('div');
       pair.className = 'sentence-pair';
       const engDiv = document.createElement('div');
@@ -128,7 +158,7 @@
         if (/^[a-zA-Z]+$/.test(part)) {
           span.className = 'word';
           span.textContent = part;
-          span.onclick = () => openNaverDict(part);
+          span.onclick = () => window.open(`https://en.dict.naver.com/#/search?query=${part}`, '_blank', 'width=500,height=600');
         } else { span.textContent = part; }
         engDiv.appendChild(span);
       });
@@ -144,83 +174,78 @@
       resultDiv.appendChild(pair);
     }
 
-    testStartBtn.onclick = () => {
-      testArea.style.display = 'block';
-      resultDiv.style.display = 'none';
-      studyInputArea.style.display = 'none';
-      testStartBtn.style.display = 'none';
+    // [모드 1] 영작 테스트 렌더링
+    function renderWritingTest() {
       testList.innerHTML = '';
-
       studyData.forEach((item, index) => {
         const div = document.createElement('div');
         div.className = 'test-item';
         div.innerHTML = `
-          <div class="test-kor">${index + 1}. ${item.kor}</div>
+          <div class="test-label">${index + 1}. ${item.kor}</div>
           <input type="text" class="test-input" placeholder="영어로 써보세요!" data-ans="${item.eng}">
           <button class="check-btn">정답 확인하기</button>
           <div class="feedback"></div>
         `;
-        
         const inputField = div.querySelector('.test-input');
-        const checkBtn = div.querySelector('.check-btn');
         const feedback = div.querySelector('.feedback');
-
-        const verifyAnswer = () => {
-          const userVal = inputField.value.trim();
-          const ansVal = inputField.dataset.ans.trim();
-          
-          const userWords = userVal.split(/\s+/);
-          const ansWords = ansVal.split(/\s+/);
-          
+        div.querySelector('.check-btn').onclick = () => {
+          const userWords = inputField.value.trim().split(/\s+/);
+          const ansWords = item.eng.split(/\s+/);
           let resultHTML = "";
-          let isAllCorrect = true;
+          let correctCount = 0;
 
-          // 단어별로 비교 (정답 단어 기준으로 비교)
-          ansWords.forEach((aWord, i) => {
-            const uWord = userWords[i] || "";
-            const cleanA = aWord.toLowerCase().replace(/[.?!,]/g, "");
-            const cleanU = uWord.toLowerCase().replace(/[.?!,]/g, "");
-
-            if (cleanA === cleanU) {
-              resultHTML += `<span class="word-correct">${uWord || aWord}</span> `;
+          ansWords.forEach((aW, i) => {
+            const uW = userWords[i] || "";
+            if (aW.toLowerCase().replace(/[.?!,]/g,"") === uW.toLowerCase().replace(/[.?!,]/g,"")) {
+              resultHTML += `<span class="word-correct">${uW || aW}</span> `;
+              correctCount++;
             } else {
-              isAllCorrect = false;
-              resultHTML += `<span class="word-wrong">${uWord || "___"}</span> `;
+              resultHTML += `<span class="word-wrong">${uW || "___"}</span> `;
             }
           });
 
-          if (isAllCorrect && userWords.length === ansWords.length) {
-            feedback.innerHTML = `<div style="color:#059669">✅ 완벽해 서현아! 정말 잘했어!</div>`;
-            inputField.style.borderColor = "#10b981";
+          if (correctCount === ansWords.length) {
+            feedback.innerHTML = `<span class="word-correct">✅ 완벽해 서현아!</span>`;
           } else {
-            feedback.innerHTML = `
-              <div style="color:#ef4444">❌ 단어를 더 열심히 공부해 볼까?</div>
-              <div class="diff-box">
-                <div style="font-size:12px; color:#666; margin-bottom:4px;">내 답안 분석:</div>
-                ${resultHTML}
-                <div style="margin-top:8px; border-top:1px dashed #ccc; padding-top:4px; font-size:13px; color:#1e40af;">
-                  정답: ${ansVal}
-                </div>
-              </div>
-            `;
-            inputField.style.borderColor = "#ef4444";
+            feedback.innerHTML = `<span class="word-wrong">❌ 단어를 더 열심히 공부해 볼까?</span><br><div class="diff-box">내 답안 분석: ${resultHTML}</div>`;
           }
         };
-
-        checkBtn.onclick = verifyAnswer;
-        inputField.onkeypress = (e) => { if (e.key === 'Enter') verifyAnswer(); };
         testList.appendChild(div);
       });
-      window.scrollTo({ top: testArea.offsetTop, behavior: 'smooth' });
-    };
-
-    function openNaverDict(word) {
-      const w = 500; const h = 600;
-      const left = (window.innerWidth / 2) - (w / 2);
-      const top = (window.innerHeight / 2) - (h / 2);
-      speak(word);
-      window.open(`https://en.dict.naver.com/#/search?query=${word}`, 'naverDict', `width=${w},height=${h},top=${top},left=${left},scrollbars=yes`);
     }
+
+    // [모드 2] 한글 뜻 쓰기 테스트 렌더링
+    function renderTranslationTest() {
+      transTestList.innerHTML = '';
+      studyData.forEach((item, index) => {
+        const div = document.createElement('div');
+        div.className = 'test-item';
+        div.innerHTML = `
+          <div class="test-label">${index + 1}. ${item.eng} <button class="speaker-btn">🔊</button></div>
+          <input type="text" class="test-input" placeholder="한글 뜻을 써보세요!">
+          <button class="check-btn">정답 확인하기</button>
+          <div class="feedback"></div>
+        `;
+        div.querySelector('.speaker-btn').onclick = () => speak(item.eng);
+        const inputField = div.querySelector('.test-input');
+        const feedback = div.querySelector('.feedback');
+        
+        div.querySelector('.check-btn').onclick = () => {
+          const userVal = inputField.value.trim();
+          // 한글은 조사가 많아 완벽 비교가 어려우므로, 정답을 보여주며 스스로 체크하게 함
+          feedback.innerHTML = `
+            <div class="diff-box">
+              <div style="font-size:12px; color:#666;">내가 쓴 뜻: ${userVal || "(빈칸)"}</div>
+              <div style="margin-top:5px; color:#059669; font-weight:bold;">원래 뜻: ${item.kor}</div>
+              <div style="font-size:11px; color:#999; margin-top:5px;">* 의미가 비슷하다면 정답이에요!</div>
+            </div>
+          `;
+        };
+        transTestList.appendChild(div);
+      });
+    }
+
+    testStartBtn.onclick = () => showMode('writing');
   </script>
 </body>
 </html>
