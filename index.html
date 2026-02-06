@@ -3,107 +3,48 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>중2 영어 독해 학습</title>
+  <title>중2 영어 독해 학습 - 모든 단어 지원</title>
   <link rel="icon" href="data:;base64,iVBORw0KGgo=">
   <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      margin: 0;
-      padding: 20px;
-      background: #f4f7f6;
-      color: #333;
-    }
-    .container {
-      max-width: 800px;
-      margin: 0 auto;
-      background: white;
-      padding: 24px;
-      border-radius: 12px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-    }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 20px; background: #f4f7f6; color: #333; }
+    .container { max-width: 800px; margin: 0 auto; background: white; padding: 24px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
     h1 { text-align: center; color: #1e40af; margin-bottom: 8px; }
     .subtitle { text-align: center; color: #666; margin-bottom: 24px; }
-    textarea {
-      width: 100%;
-      min-height: 160px;
-      padding: 16px;
-      font-size: 16px;
-      line-height: 1.6;
-      border: 2px solid #e5e7eb;
-      border-radius: 8px;
-      resize: vertical;
-      box-sizing: border-box;
-      outline: none;
-      transition: border-color 0.2s;
-    }
+    textarea { width: 100%; min-height: 120px; padding: 16px; font-size: 16px; line-height: 1.6; border: 2px solid #e5e7eb; border-radius: 8px; resize: vertical; box-sizing: border-box; outline: none; transition: border-color 0.2s; }
     textarea:focus { border-color: #3b82f6; }
-    button {
-      width: 100%;
-      padding: 14px;
-      font-size: 17px;
-      background: #2563eb;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      margin: 16px 0;
-      cursor: pointer;
-      font-weight: 600;
-    }
+    button { width: 100%; padding: 14px; font-size: 17px; background: #2563eb; color: white; border: none; border-radius: 8px; margin: 16px 0; cursor: pointer; font-weight: 600; }
     button:hover { background: #1d4ed8; }
     button:disabled { background: #9ca3af; cursor: not-allowed; }
+    
     #result { margin-top: 24px; }
-    .sentence-pair {
-      margin-bottom: 24px;
-      padding: 16px;
-      background: #f8fafc;
-      border-radius: 8px;
-      border-left: 4px solid #3b82f6;
-    }
-    .english {
-      font-size: 18px;
-      line-height: 1.6;
-      margin-bottom: 8px;
-      font-weight: 500;
-    }
-    .korean {
-      font-size: 15px;
-      color: #4b5563;
-      line-height: 1.5;
-    }
-    .speaker {
-      background: none;
-      border: none;
-      font-size: 18px;
-      cursor: pointer;
-      margin-left: 8px;
-      vertical-align: middle;
-      opacity: 0.6;
-    }
-    .speaker:hover { opacity: 1; }
-    .word {
-      color: #2563eb;
-      cursor: pointer;
-      text-decoration: underline dotted;
-    }
-    .popup {
-      position: absolute;
-      background: #fff;
-      border: 1px solid #d1d5db;
-      border-radius: 8px;
-      padding: 12px;
-      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
-      z-index: 100;
-      max-width: 250px;
-      font-size: 14px;
-    }
+    .sentence-pair { margin-bottom: 24px; padding: 16px; background: #f8fafc; border-radius: 8px; border-left: 4px solid #3b82f6; position: relative; }
+    .english { font-size: 18px; line-height: 1.8; margin-bottom: 8px; font-weight: 500; color: #1f2937; }
+    .korean { font-size: 15px; color: #6b7280; line-height: 1.5; }
+    
+    .speaker-btn { background: none; border: none; font-size: 18px; cursor: pointer; opacity: 0.4; transition: 0.2s; vertical-align: middle; }
+    .speaker-btn:hover { opacity: 1; transform: scale(1.1); }
+    
+    /* 모든 단어에 스타일 적용 */
+    .word { cursor: pointer; border-bottom: 1px dashed #cbd5e1; padding: 0 1px; transition: all 0.2s; }
+    .word:hover { background: #dbeafe; color: #2563eb; border-bottom-color: #2563eb; }
+    
+    /* 팝업 스타일 */
+    .popup { position: absolute; background: #fff; border: 1px solid #d1d5db; border-radius: 12px; padding: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); z-index: 1000; min-width: 200px; animation: fadeIn 0.2s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    .popup-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+    .popup-word { font-size: 18px; font-weight: bold; color: #1e40af; }
+    .popup-pos { font-size: 12px; color: #6b7280; background: #f3f4f6; padding: 2px 6px; border-radius: 4px; }
+    .popup-meaning { font-size: 16px; color: #111827; font-weight: 600; margin: 8px 0; }
+    .popup-explain { font-size: 13px; color: #6b7280; line-height: 1.4; }
+    .naver-link { display: block; margin-top: 10px; font-size: 12px; color: #10b981; text-decoration: none; text-align: right; }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>중2 영어 독해 학습</h1>
-    <p class="subtitle">영어 지문을 입력하면 문장별 번역과 발음을 제공합니다.</p>
+    <p class="subtitle">모든 단어를 클릭할 수 있습니다. 모르는 단어는 클릭해 보세요!</p>
 
-    <textarea id="input" placeholder="학습할 영어 지문을 입력하세요..."></textarea>
+    <textarea id="input" placeholder="영어 지문을 입력하세요...">I have a dog. His name is Ako. He is a member of my family. I want to tell you about my dog today. He is very special to me.</textarea>
     <button id="btn">번역 및 분석 시작</button>
 
     <div id="result"></div>
@@ -114,80 +55,82 @@
     const btn = document.getElementById('btn');
     const resultDiv = document.getElementById('result');
 
+    // 사용자가 특별히 설명하고 싶은 주요 단어들
     const simpleDict = {
-      dog: { pos: "명사", meaning: "개", explain: "친숙한 반려동물" },
-      family: { pos: "명사", meaning: "가족", explain: "함께 사는 소중한 사람들" },
-      special: { pos: "형용사", meaning: "특별한", explain: "보통과 다른 성질이 있는" },
-      happy: { pos: "형용사", meaning: "행복한", explain: "기쁘고 즐거운 상태" },
-      school: { pos: "명사", meaning: "학교", explain: "공부를 배우는 곳" }
-      // 여기에 단어를 추가하면 팝업 기능이 활성화됩니다.
+      dog: { pos: "명사", meaning: "개", explain: "사람과 가장 친한 반려동물" },
+      special: { pos: "형용사", meaning: "특별한", explain: "보통과 다르거나 매우 소중한" },
+      family: { pos: "명사", meaning: "가족", explain: "함께 생활하며 사랑하는 사람들" }
+      // 여기에 없는 단어는 자동으로 네이버 사전 연동으로 처리됩니다.
     };
+
+    function speak(text) {
+      window.speechSynthesis.cancel();
+      const ut = new SpeechSynthesisUtterance(text);
+      ut.lang = 'en-US';
+      ut.rate = 0.9;
+      window.speechSynthesis.speak(ut);
+    }
 
     btn.addEventListener('click', async () => {
       const text = input.value.trim();
-      if (!text) {
-        alert('영어 지문을 입력해주세요.');
-        return;
-      }
+      if (!text) return alert('지문을 입력하세요.');
 
       btn.disabled = true;
-      btn.textContent = 'AI 번역 처리 중...';
-      resultDiv.innerHTML = '<p style="text-align:center; color:#6b7280;">문장을 분석하고 번역하는 중입니다...</p>';
+      btn.textContent = '지문 분석 중...';
+      resultDiv.innerHTML = '';
 
-      try {
-        // 1. 영어 문장 분리
-        const sentences = text.split(/(?<=[.!?])\s+/).filter(s => s.trim());
-        resultDiv.innerHTML = '';
+      const sentences = text.split(/(?<=[.!?])\s+/).filter(s => s.trim());
 
-        // 2. 각 문장별로 번역 요청 (MyMemory API 사용)
-        for (let engSentence of sentences) {
-          const response = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(engSentence)}&langpair=en|ko`);
-          const data = await response.json();
-          const korSentence = data.responseData.translatedText;
-
-          // 결과 UI 생성
-          renderSentence(engSentence, korSentence);
+      for (let eng of sentences) {
+        try {
+          const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(eng)}&langpair=en|ko`);
+          const data = await res.json();
+          renderSentence(eng, data.responseData.translatedText);
+        } catch (e) {
+          renderSentence(eng, "번역 서버 오류");
         }
-
-      } catch (err) {
-        console.error(err);
-        resultDiv.innerHTML = `<p style="color:#dc2626;">번역 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.</p>`;
-      } finally {
-        btn.disabled = false;
-        btn.textContent = '번역 및 분석 시작';
       }
+      btn.disabled = false;
+      btn.textContent = '번역 및 분석 시작';
     });
 
     function renderSentence(eng, kor) {
       const pair = document.createElement('div');
       pair.className = 'sentence-pair';
 
-      // 영어 섹션 (단어 클릭 기능 포함)
       const engDiv = document.createElement('div');
       engDiv.className = 'english';
       
-      const wordsHtml = eng.split(/(\s+|\b)/).map(part => {
-        const word = part.trim().toLowerCase().replace(/[.?!,]/g, "");
-        if (word && simpleDict[word]) {
-          return `<span class="word" data-word="${word}">${part}</span>`;
+      // 알파벳 단어만 찾아 <span>으로 감쌉니다 (모든 단어 대상)
+      const words = eng.split(/([^a-zA-Z]+)/);
+      words.forEach(part => {
+        if (/^[a-zA-Z]+$/.test(part)) {
+          const span = document.createElement('span');
+          span.className = 'word';
+          span.textContent = part;
+          span.onclick = (e) => {
+            e.stopPropagation();
+            const cleanWord = part.toLowerCase();
+            
+            // 데이터베이스에 있으면 팝업, 없으면 네이버 사전 팝업
+            if (simpleDict[cleanWord]) {
+              showWordPopup(e, cleanWord);
+            } else {
+              openNaverDict(part);
+            }
+          };
+          engDiv.appendChild(span);
+        } else {
+          engDiv.appendChild(document.createTextNode(part));
         }
-        return part;
-      }).join('');
+      });
 
-      engDiv.innerHTML = wordsHtml;
+      const speakBtn = document.createElement('button');
+      speakBtn.className = 'speaker-btn';
+      speakBtn.innerHTML = ' 🔊';
+      speakBtn.onclick = () => speak(eng);
+      engDiv.appendChild(speakBtn);
 
-      // 발음 버튼
-      const speaker = document.createElement('button');
-      speaker.className = 'speaker';
-      speaker.textContent = '🔊';
-      speaker.onclick = () => {
-        const ut = new SpeechSynthesisUtterance(eng);
-        ut.lang = 'en-US';
-        speechSynthesis.speak(ut);
-      };
-      engDiv.appendChild(speaker);
-
-      // 한국어 섹션
       const korDiv = document.createElement('div');
       korDiv.className = 'korean';
       korDiv.textContent = kor;
@@ -195,36 +138,53 @@
       pair.appendChild(engDiv);
       pair.appendChild(korDiv);
       resultDiv.appendChild(pair);
-
-      // 단어 팝업 이벤트 연결
-      pair.querySelectorAll('.word').forEach(el => {
-        el.onclick = (e) => {
-          e.stopPropagation();
-          showPopup(e, el.dataset.word);
-        };
-      });
     }
 
-    function showPopup(e, wordKey) {
+    function openNaverDict(word) {
+      // 화면 중앙에 네이버 사전 팝업 띄우기
+      const w = 500;
+      const h = 600;
+      const left = (window.innerWidth / 2) - (w / 2);
+      const top = (window.innerHeight / 2) - (h / 2);
+      
+      // 단어 발음도 함께 들려줌
+      speak(word);
+      
+      window.open(
+        `https://en.dict.naver.com/#/search?query=${word}`, 
+        'naverDict', 
+        `width=${w},height=${h},top=${top},left=${left},scrollbars=yes`
+      );
+    }
+
+    function showWordPopup(e, wordKey) {
       document.querySelectorAll('.popup').forEach(p => p.remove());
       const info = simpleDict[wordKey];
+      
       const popup = document.createElement('div');
       popup.className = 'popup';
       popup.innerHTML = `
-        <strong>${wordKey.toUpperCase()}</strong> [${info.pos}]<br>
-        <span style="color:#2563eb; font-weight:bold;">뜻: ${info.meaning}</span><br>
-        <small style="color:#666;">${info.explain}</small>
+        <div class="popup-header">
+          <span class="popup-word">${wordKey.toUpperCase()}</span>
+          <span class="popup-pos">${info.pos}</span>
+          <button class="speaker-btn" id="pop-speak">🔊</button>
+        </div>
+        <div class="popup-meaning">${info.meaning}</div>
+        <div class="popup-explain">${info.explain}</div>
+        <a href="https://en.dict.naver.com/#/search?query=${wordKey}" target="_blank" class="naver-link">더 자세히 보기 →</a>
       `;
       
       document.body.appendChild(popup);
-      popup.style.left = e.pageX + 'px';
-      popup.style.top = (e.pageY + 10) + 'px';
+      popup.style.left = Math.min(window.innerWidth - 220, e.pageX) + 'px';
+      popup.style.top = (e.pageY + 15) + 'px';
 
-      const closePopup = () => {
-        popup.remove();
-        document.removeEventListener('click', closePopup);
+      popup.querySelector('#pop-speak').onclick = (ev) => {
+        ev.stopPropagation();
+        speak(wordKey);
       };
-      setTimeout(() => document.addEventListener('click', closePopup), 10);
+
+      const close = (ev) => { if(!popup.contains(ev.target)) { popup.remove(); document.removeEventListener('click', close); } };
+      setTimeout(() => document.addEventListener('click', close), 10);
     }
   </script>
 </body>
