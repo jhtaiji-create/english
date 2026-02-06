@@ -142,7 +142,7 @@
 
       try {
         // 1. LibreTranslate로 전체 텍스트 한 번에 번역
-        const translateRes = await fetch('https://libretranslate.com/translate', {
+        const translateRes = await fetch('https://translate.argosopentech.com/translate', {
           method: 'POST',
           body: JSON.stringify({
             q: text,
@@ -253,4 +253,5 @@
   </script>
 </body>
 </html>
+
 
