@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>우리딸 영어 독해 학습</title>
+  <title>우리딸 영어 독해 학습 - 테스트 모드 포함</title>
   <link rel="icon" href="data:;base64,iVBORw0KGgo=">
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 20px; background: #f4f7f6; color: #333; }
@@ -39,14 +39,18 @@
     #test-area { display: none; margin-top: 30px; padding: 20px; border-radius: 12px; background: #eff6ff; border: 2px solid #3b82f6; }
     .test-item { background: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
     .test-kor { font-weight: 600; color: #1e40af; margin-bottom: 10px; font-size: 15px; }
-    .test-input { width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; font-size: 16px; box-sizing: border-box; outline: none; }
-    .test-input:focus { border-color: #3b82f6; }
-    .feedback { margin-top: 8px; font-size: 14px; font-weight: bold; }
+    .test-input { width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; font-size: 16px; box-sizing: border-box; outline: none; transition: 0.3s; }
+    
+    /* 입력창 상태별 색상 */
+    .test-input.input-correct { border-color: #10b981; background-color: #f0fdf4; }
+    .test-input.input-incorrect { border-color: #ef4444; background-color: #fef2f2; }
+
+    .check-btn { background: #6366f1; color: white; border: none; padding: 8px 16px; border-radius: 6px; margin-top: 10px; cursor: pointer; font-weight: 600; transition: 0.2s; }
+    .check-btn:hover { background: #4f46e5; }
+    
+    .feedback { margin-top: 10px; font-size: 14px; font-weight: bold; display: block; min-height: 20px; }
     .correct { color: #059669; }
     .incorrect { color: #dc2626; }
-
-    /* 공부 모드일 때 숨겨질 영역들을 위한 클래스 */
-    .hidden { display: none !important; }
   </style>
 </head>
 <body>
@@ -65,7 +69,7 @@
 
     <div id="test-area">
       <h3 style="margin-top:0; text-align:center;">✍️ 서현이의 영작 도전!</h3>
-      <p style="font-size:13px; color:#666; text-align:center;">한글을 보고 영어로 쓴 뒤 'Enter'를 눌러봐!</p>
+      <p style="font-size:13px; color:#666; text-align:center;">한글을 보고 영어로 써본 뒤 정답 확인을 눌러봐!</p>
       <div id="test-list"></div>
       <button id="go-back-btn" style="background:none; border:none; color:#666; text-decoration:underline; cursor:pointer; width:100%; margin-top:10px;">다시 공부하러 가기</button>
     </div>
@@ -97,12 +101,11 @@
       window.speechSynthesis.speak(ut);
     }
 
-    // [중요] 다시 공부하러 가기 버튼 클릭 시 동작
     goBackBtn.onclick = () => {
-      testArea.style.display = 'none';      // 테스트 영역 숨기기
-      studyInputArea.style.display = 'block'; // 입력창 다시 보이기
-      resultDiv.style.display = 'block';     // 분석 결과 다시 보이기
-      testStartBtn.style.display = 'block';  // 테스트 버튼 다시 보이기
+      testArea.style.display = 'none';
+      studyInputArea.style.display = 'block';
+      resultDiv.style.display = 'block';
+      testStartBtn.style.display = 'block';
       window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
@@ -138,10 +141,8 @@
     function renderSentence(eng, kor) {
       const pair = document.createElement('div');
       pair.className = 'sentence-pair';
-
       const engDiv = document.createElement('div');
       engDiv.className = 'english';
-      
       const words = eng.split(/([^a-zA-Z]+)/);
       words.forEach(part => {
         if (/^[a-zA-Z]+$/.test(part)) {
@@ -159,17 +160,14 @@
           engDiv.appendChild(document.createTextNode(part));
         }
       });
-
       const speakBtn = document.createElement('button');
       speakBtn.className = 'speaker-btn';
       speakBtn.innerHTML = ' 🔊';
       speakBtn.onclick = () => speak(eng);
       engDiv.appendChild(speakBtn);
-
       const korDiv = document.createElement('div');
       korDiv.className = 'korean';
       korDiv.textContent = kor;
-
       pair.appendChild(engDiv);
       pair.appendChild(korDiv);
       resultDiv.appendChild(pair);
@@ -177,8 +175,8 @@
 
     testStartBtn.onclick = () => {
       testArea.style.display = 'block';
-      resultDiv.style.display = 'none';     // 공부 내용 숨기기
-      studyInputArea.style.display = 'none'; // 입력창 숨기기
+      resultDiv.style.display = 'none';
+      studyInputArea.style.display = 'none';
       testStartBtn.style.display = 'none';
       testList.innerHTML = '';
 
@@ -188,26 +186,36 @@
         div.innerHTML = `
           <div class="test-kor">${index + 1}. ${item.kor}</div>
           <input type="text" class="test-input" placeholder="영어로 써보세요!" data-ans="${item.eng}">
+          <button class="check-btn">정답 확인하기</button>
           <div class="feedback"></div>
         `;
         
         const inputField = div.querySelector('.test-input');
+        const checkBtn = div.querySelector('.check-btn');
         const feedback = div.querySelector('.feedback');
 
-        inputField.onkeypress = (e) => {
-          if (e.key === 'Enter') {
-            const userVal = inputField.value.trim();
-            const ansVal = inputField.dataset.ans.trim();
-            
-            if (userVal.toLowerCase().replace(/[.?!,]/g, "") === ansVal.toLowerCase().replace(/[.?!,]/g, "")) {
-              feedback.innerHTML = "✅ 정답이야 서현아! 최고!";
-              feedback.className = "feedback correct";
-            } else {
-              feedback.innerHTML = `❌ 아쉽다! 정답은: ${ansVal}`;
-              feedback.className = "feedback incorrect";
-            }
+        const verifyAnswer = () => {
+          const userVal = inputField.value.trim();
+          const ansVal = inputField.dataset.ans.trim();
+          
+          // 구두점 무시하고 비교
+          const cleanUser = userVal.toLowerCase().replace(/[.?!,]/g, "");
+          const cleanAns = ansVal.toLowerCase().replace(/[.?!,]/g, "");
+
+          if (cleanUser === cleanAns) {
+            feedback.innerHTML = "✅ 정답이야 서현아! 최고!";
+            feedback.className = "feedback correct";
+            inputField.className = "test-input input-correct";
+          } else {
+            feedback.innerHTML = `❌ 다시 한번 생각해봐! (힌트: 첫 글자는 '${ansVal[0]}')`;
+            feedback.className = "feedback incorrect";
+            inputField.className = "test-input input-incorrect";
           }
         };
+
+        checkBtn.onclick = verifyAnswer;
+        inputField.onkeypress = (e) => { if (e.key === 'Enter') verifyAnswer(); };
+
         testList.appendChild(div);
       });
       window.scrollTo({ top: testArea.offsetTop, behavior: 'smooth' });
