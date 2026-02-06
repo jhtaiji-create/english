@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>우리딸 영어 독해 학습 - 테스트 모드 포함</title>
+  <title>우리딸 영어 독해 학습</title>
   <link rel="icon" href="data:;base64,iVBORw0KGgo=">
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 20px; background: #f4f7f6; color: #333; }
@@ -13,7 +13,6 @@
     textarea { width: 100%; min-height: 120px; padding: 16px; font-size: 16px; line-height: 1.6; border: 2px solid #e5e7eb; border-radius: 8px; resize: vertical; box-sizing: border-box; outline: none; transition: border-color 0.2s; }
     textarea:focus { border-color: #3b82f6; }
     
-    /* 버튼 스타일 */
     .primary-btn { width: 100%; padding: 14px; font-size: 17px; background: #2563eb; color: white; border: none; border-radius: 8px; margin: 16px 0; cursor: pointer; font-weight: 600; transition: 0.2s; }
     .primary-btn:hover { background: #1d4ed8; }
     .test-btn { background: #10b981; display: none; margin-top: 10px; }
@@ -30,7 +29,6 @@
     .word { cursor: pointer; border-bottom: 1px dashed #cbd5e1; padding: 0 1px; transition: all 0.2s; }
     .word:hover { background: #dbeafe; color: #2563eb; border-bottom-color: #2563eb; }
     
-    /* 팝업 스타일 */
     .popup { position: absolute; background: #fff; border: 1px solid #d1d5db; border-radius: 12px; padding: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); z-index: 1000; min-width: 200px; animation: fadeIn 0.2s ease-out; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     .popup-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
@@ -38,7 +36,6 @@
     .popup-meaning { font-size: 16px; color: #111827; font-weight: 600; margin: 8px 0; }
     .naver-link { display: block; margin-top: 10px; font-size: 12px; color: #10b981; text-decoration: none; text-align: right; }
 
-    /* 영작 테스트 영역 스타일 */
     #test-area { display: none; margin-top: 30px; padding: 20px; border-radius: 12px; background: #eff6ff; border: 2px solid #3b82f6; }
     .test-item { background: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
     .test-kor { font-weight: 600; color: #1e40af; margin-bottom: 10px; font-size: 15px; }
@@ -54,8 +51,10 @@
     <h1>우리딸 영어 독해 학습</h1>
     <p class="subtitle">서현아 모르는 단어를 클릭해봐★크롬에서 가장 잘 들려요!!</p>
 
-    <textarea id="input" placeholder="사랑해 서현아 여기다 영어를 입력해봐..."></textarea>
-    <button id="btn" class="primary-btn">번역 및 분석 시작</button>
+    <div id="input-section">
+      <textarea id="input" placeholder="사랑해 서현아 여기다 영어를 입력해봐..."></textarea>
+      <button id="btn" class="primary-btn">번역 및 분석 시작</button>
+    </div>
 
     <div id="result"></div>
     
@@ -65,19 +64,20 @@
       <h3 style="margin-top:0; text-align:center;">✍️ 서현이의 영작 도전!</h3>
       <p style="font-size:13px; color:#666; text-align:center;">한글을 보고 영어로 쓴 뒤 'Enter'를 눌러봐!</p>
       <div id="test-list"></div>
-      <button onclick="location.reload()" style="background:none; border:none; color:#666; text-decoration:underline; cursor:pointer; width:100%; margin-top:10px;">다시 공부하러 가기</button>
+      <button onclick="goBackToStudy()" style="background:none; border:none; color:#666; text-decoration:underline; cursor:pointer; width:100%; margin-top:10px;">다시 공부하러 가기</button>
     </div>
   </div>
 
   <script>
     const input = document.getElementById('input');
+    const inputSection = document.getElementById('input-section');
     const btn = document.getElementById('btn');
     const resultDiv = document.getElementById('result');
     const testStartBtn = document.getElementById('test-start-btn');
     const testArea = document.getElementById('test-area');
     const testList = document.getElementById('test-list');
 
-    let studyData = []; // 문장 데이터를 저장할 공간
+    let studyData = [];
 
     const simpleDict = {
       dog: { pos: "명사", meaning: "개", explain: "사람과 가장 친한 반려동물" },
@@ -93,6 +93,15 @@
       window.speechSynthesis.speak(ut);
     }
 
+    // [기능 추가] 다시 공부하기 화면으로 전환
+    function goBackToStudy() {
+      testArea.style.display = 'none';      // 테스트 창 숨기기
+      resultDiv.style.display = 'block';     // 분석 결과 창 보이기
+      inputSection.style.display = 'block';  // 입력창 영역 보이기
+      testStartBtn.style.display = 'block';  // 테스트 시작 버튼 보이기
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
     btn.addEventListener('click', async () => {
       const text = input.value.trim();
       if (!text) return alert('지문을 입력하세요.');
@@ -100,7 +109,7 @@
       btn.disabled = true;
       btn.textContent = '지문 분석 중...';
       resultDiv.innerHTML = '';
-      studyData = []; // 초기화
+      studyData = [];
       testArea.style.display = 'none';
 
       const sentences = text.split(/(?<=[.!?])\s+/).filter(s => s.trim());
@@ -111,7 +120,7 @@
           const data = await res.json();
           const kor = data.responseData.translatedText;
           
-          studyData.push({ eng, kor }); // 테스트용 데이터 저장
+          studyData.push({ eng, kor });
           renderSentence(eng, kor);
         } catch (e) {
           renderSentence(eng, "번역 서버 오류");
@@ -119,7 +128,7 @@
       }
       btn.disabled = false;
       btn.textContent = '번역 및 분석 시작';
-      testStartBtn.style.display = 'block'; // 분석 완료 후 테스트 버튼 노출
+      testStartBtn.style.display = 'block';
     });
 
     function renderSentence(eng, kor) {
@@ -162,10 +171,10 @@
       resultDiv.appendChild(pair);
     }
 
-    // 영작 테스트 시작 기능
     testStartBtn.onclick = () => {
       testArea.style.display = 'block';
       resultDiv.style.display = 'none';
+      inputSection.style.display = 'none'; // 테스트 중에는 입력창도 숨겨서 집중도 향상
       testStartBtn.style.display = 'none';
       testList.innerHTML = '';
 
@@ -186,7 +195,6 @@
             const userVal = inputField.value.trim();
             const ansVal = inputField.dataset.ans.trim();
             
-            // 구두점 무시하고 비교할지 여부에 따라 조절 가능 (여기선 완전 일치)
             if (userVal.toLowerCase().replace(/[.?!,]/g, "") === ansVal.toLowerCase().replace(/[.?!,]/g, "")) {
               feedback.innerHTML = "✅ 정답이야 서현아! 최고!";
               feedback.className = "feedback correct";
@@ -221,15 +229,4 @@
         </div>
         <div class="popup-meaning">${info.meaning}</div>
         <div class="popup-explain">${info.explain}</div>
-        <a href="https://en.dict.naver.com/#/search?query=${wordKey}" target="_blank" class="naver-link">더 자세히 보기 →</a>
-      `;
-      document.body.appendChild(popup);
-      popup.style.left = Math.min(window.innerWidth - 220, e.pageX) + 'px';
-      popup.style.top = (e.pageY + 15) + 'px';
-      popup.querySelector('#pop-speak').onclick = (ev) => { ev.stopPropagation(); speak(wordKey); };
-      const close = (ev) => { if(!popup.contains(ev.target)) { popup.remove(); document.removeEventListener('click', close); } };
-      setTimeout(() => document.addEventListener('click', close), 10);
-    }
-  </script>
-</body>
-</html>
+        <a href="https://en.dict.naver.com/#/search?query=${wordKey}" target
