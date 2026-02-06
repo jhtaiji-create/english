@@ -20,16 +20,8 @@
       border-radius: 10px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     }
-    h1 {
-      text-align: center;
-      color: #1e40af;
-      margin-bottom: 8px;
-    }
-    p.subtitle {
-      text-align: center;
-      color: #555;
-      margin-bottom: 24px;
-    }
+    h1 { text-align: center; color: #1e40af; margin-bottom: 8px; }
+    .subtitle { text-align: center; color: #555; margin-bottom: 24px; }
     textarea {
       width: 100%;
       min-height: 160px;
@@ -40,10 +32,8 @@
       border-radius: 8px;
       resize: vertical;
       box-sizing: border-box;
-      font-family: inherit;
     }
     button {
-      display: block;
       width: 100%;
       padding: 14px;
       font-size: 17px;
@@ -55,12 +45,12 @@
       cursor: pointer;
       font-weight: 500;
     }
-    button:hover {
-      background: #1e40af;
+    button:hover { background: #1e40af; }
+    button:disabled {
+      background: #9ca3af;
+      cursor: not-allowed;
     }
-    #result {
-      margin-top: 24px;
-    }
+    #result { margin-top: 24px; }
     .sentence-pair {
       margin-bottom: 20px;
       padding-bottom: 16px;
@@ -70,11 +60,11 @@
       font-size: 17px;
       line-height: 1.6;
       margin-bottom: 6px;
-      position: relative;
+      word-wrap: break-word;
     }
     .korean {
       font-size: 15px;
-      color: #4b5563;
+      color: #374151;
       line-height: 1.5;
     }
     .speaker {
@@ -85,12 +75,33 @@
       margin-left: 8px;
       vertical-align: middle;
     }
+    .word {
+      color: #2563eb;
+      cursor: pointer;
+      text-decoration: underline dotted;
+      text-underline-offset: 2px;
+    }
+    .word:hover { color: #1d4ed8; }
+    .popup {
+      position: absolute;
+      background: #fff;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      padding: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 100;
+      max-width: 280px;
+      font-size: 14px;
+      line-height: 1.5;
+      display: none;
+    }
+    .popup.show { display: block; }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>중2 영어 독해 학습</h1>
-    <p class="subtitle">영어 지문을 입력한 후 버튼을 눌러보세요.</p>
+    <p class="subtitle">영어 지문을 입력한 후 버튼을 누르세요.</p>
 
     <textarea id="input" placeholder="여기에 영어 지문을 붙여넣으세요..."></textarea>
     <button id="btn">번역 및 분석</button>
@@ -101,48 +112,143 @@
   <script>
     const input = document.getElementById('input');
     const btn = document.getElementById('btn');
-    const result = document.getElementById('result');
+    const resultDiv = document.getElementById('result');
 
-    btn.addEventListener('click', () => {
+    // 간단한 품사·뜻 매핑 (실제로는 더 정교하게 개선 가능)
+    const simpleDict = {
+      dog:       { pos: "명사", meaning: "개", explain: "애완동물로 키우는 동물" },
+      name:      { pos: "명사", meaning: "이름", explain: "사람이나 동물의 이름" },
+      family:    { pos: "명사", meaning: "가족", explain: "부모님, 형제자매 등" },
+      member:    { pos: "명사", meaning: "구성원", explain: "어떤 그룹에 속한 사람" },
+      special:   { pos: "형용사", meaning: "특별한", explain: "다른 것과 다른, 소중한" },
+      have:      { pos: "동사", meaning: "가지다", explain: "소유하다" },
+      is:        { pos: "동사", meaning: "(be동사)", explain: "이다" },
+      want:      { pos: "동사", meaning: "원하다", explain: "하고 싶다" },
+      tell:      { pos: "동사", meaning: "말하다", explain: "누군가에게 이야기를 하다" },
+      today:     { pos: "부사", meaning: "오늘", explain: "현재 날짜" }
+      // 필요하면 더 많은 단어 추가 가능
+    };
+
+    btn.addEventListener('click', async () => {
       const text = input.value.trim();
       if (!text) {
         alert('영어 지문을 입력해주세요.');
         return;
       }
 
-      // 문장 나누기 (간단한 정규식으로 . ! ? 기준 분리)
-      const sentences = text.split(/(?<=[.!?])\s+/).filter(s => s.trim());
+      btn.disabled = true;
+      btn.textContent = '번역 중...';
+      resultDiv.innerHTML = '<p style="color:#6b7280;">번역과 분석을 준비 중입니다...</p>';
 
-      result.innerHTML = '';
+      try {
+        // 1. LibreTranslate로 전체 텍스트 한 번에 번역
+        const translateRes = await fetch('https://libretranslate.de/translate', {
+          method: 'POST',
+          body: JSON.stringify({
+            q: text,
+            source: 'en',
+            target: 'ko',
+            format: 'text'
+          }),
+          headers: { 'Content-Type': 'application/json' }
+        });
 
-      sentences.forEach(sentence => {
-        const div = document.createElement('div');
-        div.className = 'sentence-pair';
+        if (!translateRes.ok) throw new Error('번역 서버 응답 오류');
 
-        const eng = document.createElement('div');
-        eng.className = 'english';
-        eng.innerHTML = sentence;
+        const translateData = await translateRes.json();
+        const fullKorean = translateData.translatedText;
 
-        const speakerBtn = document.createElement('button');
-        speakerBtn.className = 'speaker';
-        speakerBtn.textContent = '🔊';
-        speakerBtn.onclick = () => {
-          const utterance = new SpeechSynthesisUtterance(sentence);
-          utterance.lang = 'en-US';
-          utterance.rate = 0.9;
-          speechSynthesis.speak(utterance);
-        };
+        // 2. 영어 문장 분리
+        const sentences = text.split(/(?<=[.!?])\s+/).filter(s => s.trim());
 
-        eng.appendChild(speakerBtn);
+        // 3. 한국어 문장도 비슷하게 분리 (정확도는 떨어질 수 있음)
+        const koreanSentences = fullKorean.split(/(?<=[.!?])\s+/).filter(s => s.trim());
 
-        const kor = document.createElement('div');
-        kor.className = 'korean';
-        kor.textContent = '(아직 번역 기능이 없습니다)';
+        resultDiv.innerHTML = '';
 
-        div.appendChild(eng);
-        div.appendChild(kor);
-        result.appendChild(div);
-      });
+        sentences.forEach((engSentence, i) => {
+          const pair = document.createElement('div');
+          pair.className = 'sentence-pair';
+
+          // 영어 문장 + 스피커 버튼
+          const engDiv = document.createElement('div');
+          engDiv.className = 'english';
+
+          // 단어를 span으로 감싸서 클릭 가능하게
+          const words = engSentence.split(/(\s+|\b)/).map(part => {
+            const word = part.trim();
+            if (/^[a-zA-Z]+$/.test(word) && simpleDict[word.toLowerCase()]) {
+              return `<span class="word" data-word="${word.toLowerCase()}">${part}</span>`;
+            }
+            return part;
+          }).join('');
+
+          engDiv.innerHTML = words;
+
+          // 듣기 버튼
+          const speaker = document.createElement('button');
+          speaker.className = 'speaker';
+          speaker.textContent = '🔊';
+          speaker.onclick = () => {
+            const ut = new SpeechSynthesisUtterance(engSentence);
+            ut.lang = 'en-US';
+            ut.rate = 0.95;
+            speechSynthesis.speak(ut);
+          };
+          engDiv.appendChild(speaker);
+
+          // 한국어 번역
+          const korDiv = document.createElement('div');
+          korDiv.className = 'korean';
+          korDiv.textContent = koreanSentences[i] || '(번역 준비 중이었으나 매칭 실패)';
+
+          pair.appendChild(engDiv);
+          pair.appendChild(korDiv);
+          resultDiv.appendChild(pair);
+        });
+
+        // 단어 클릭 팝업 이벤트
+        document.querySelectorAll('.word').forEach(el => {
+          el.addEventListener('click', (e) => {
+            e.stopPropagation();
+
+            // 이미 열려있는 팝업 닫기
+            document.querySelectorAll('.popup').forEach(p => p.remove());
+
+            const word = e.target.dataset.word;
+            const info = simpleDict[word];
+
+            if (!info) return;
+
+            const popup = document.createElement('div');
+            popup.className = 'popup show';
+            popup.innerHTML = `
+              <strong>${word}</strong><br>
+              <span style="color:#4b5563;">${info.pos}</span><br><br>
+              뜻: <strong>${info.meaning}</strong><br>
+              설명: ${info.explain}
+            `;
+
+            e.target.parentElement.appendChild(popup);
+
+            // 바깥 클릭 시 닫기
+            const closePopup = (ev) => {
+              if (!popup.contains(ev.target) && !el.contains(ev.target)) {
+                popup.remove();
+                document.removeEventListener('click', closePopup);
+              }
+            };
+            setTimeout(() => document.addEventListener('click', closePopup), 0);
+          });
+        });
+
+      } catch (err) {
+        console.error(err);
+        resultDiv.innerHTML = `<p style="color:#dc2626;">오류가 발생했습니다: ${err.message}</p>`;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '번역 및 분석';
+      }
     });
   </script>
 </body>
